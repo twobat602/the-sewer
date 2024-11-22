@@ -1,0 +1,261 @@
+local player = game.Players.LocalPlayer
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+local Window = OrionLib:MakeWindow({Name = "The Sewer", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+
+local savedLocations = {}
+
+-- Create the "Collect" tab
+local TabCollect = Window:MakeTab({
+	Name = "Collect",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local SectionCollect = TabCollect:AddSection({
+	Name = "Collect Items"
+})
+
+-- Show welcome notification
+OrionLib:MakeNotification({
+	Name = "Welcome!",
+	Content = "Hi, thank you for using my script - Twobat",
+	Image = "rbxassetid://4483345998",
+	Time = 5
+})
+
+-- Button for Burger teleportation
+TabCollect:AddButton({
+	Name = "Burger",
+	Callback = function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local originalPosition = humanoidRootPart.CFrame
+		
+		local function teleportPlayerToBurger(burger)
+			if burger then
+				local burgerPosition = burger.PrimaryPart and burger.PrimaryPart.CFrame or burger.CFrame
+				character:SetPrimaryPartCFrame(burgerPosition * CFrame.new(0, 5, 0))
+			end
+		end
+
+		local function teleportToDifferentBurgers()
+			local burgers = {}
+			for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
+				if obj.Name == "Burger" then
+					table.insert(burgers, obj)
+				end
+			end
+			for i = 1, 3 do
+				if burgers[i] then
+					teleportPlayerToBurger(burgers[i])
+					wait(4)
+				end
+			end
+			character:SetPrimaryPartCFrame(originalPosition)
+		end
+
+		teleportToDifferentBurgers()
+
+		OrionLib:MakeNotification({
+			Name = "Burger Teleport",
+			Content = "You have been teleported to the Burgers!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end
+})
+
+-- Button for Scrap teleportation
+TabCollect:AddButton({
+	Name = "Scrap",
+	Callback = function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local originalPosition = humanoidRootPart.CFrame
+		
+		local function teleportPlayerToScrapPile(scrapPile)
+			if scrapPile then
+				local scrapPilePosition = scrapPile.PrimaryPart and scrapPile.PrimaryPart.CFrame or scrapPile.CFrame
+				character:SetPrimaryPartCFrame(scrapPilePosition * CFrame.new(0, 5, 0))
+			end
+		end
+
+		local function teleportToDifferentScrapPiles()
+			local scrapPiles = {}
+			for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
+				if obj.Name == "ScrapPile" then
+					table.insert(scrapPiles, obj)
+				end
+			end
+			for i = 1, 3 do
+				if scrapPiles[i] then
+					teleportPlayerToScrapPile(scrapPiles[i])
+					wait(11)
+				end
+			end
+			character:SetPrimaryPartCFrame(originalPosition)
+		end
+
+		teleportToDifferentScrapPiles()
+
+		OrionLib:MakeNotification({
+			Name = "Scrap Teleport",
+			Content = "You have been teleported to the Scraps!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end
+})
+
+-- Button for Cheese teleportation
+TabCollect:AddButton({
+	Name = "Cheese",
+	Callback = function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local originalPosition = humanoidRootPart.CFrame
+		
+		local function teleportPlayerToCheese(cheese)
+			if cheese then
+				local cheesePosition = cheese.PrimaryPart and cheese.PrimaryPart.CFrame or cheese.CFrame
+				character:SetPrimaryPartCFrame(cheesePosition * CFrame.new(0, 5, 0))
+			end
+		end
+
+		local function teleportToDifferentCheese()
+			local cheeses = {}
+			for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
+				if obj.Name == "Cheese" then
+					table.insert(cheeses, obj)
+				end
+			end
+			for i = 1, 3 do
+				if cheeses[i] then
+					teleportPlayerToCheese(cheeses[i])
+					wait(4)
+				end
+			end
+			character:SetPrimaryPartCFrame(originalPosition)
+		end
+
+		teleportToDifferentCheese()
+
+		OrionLib:MakeNotification({
+			Name = "Cheese Teleport",
+			Content = "You have been teleported to the Cheese!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end
+})
+
+-- Create the "Set Home" tab
+local TabHome = Window:MakeTab({
+	Name = "Set Home",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local SectionHome = TabHome:AddSection({
+	Name = "Home"
+})
+
+-- Button to Save Position
+TabHome:AddButton({
+	Name = "Save Position",
+	Callback = function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		savedLocations[player.UserId] = humanoidRootPart.Position
+		
+		OrionLib:MakeNotification({
+			Name = "Location Saved",
+			Content = "Your position has been saved!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end
+})
+
+-- Button to Teleport to Saved Position
+TabHome:AddButton({
+	Name = "Teleport Home",
+	Callback = function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+		local savedLocation = savedLocations[player.UserId]
+		if savedLocation then
+			humanoidRootPart.CFrame = CFrame.new(savedLocation)
+			OrionLib:MakeNotification({
+				Name = "Teleported",
+				Content = "You have been teleported back to your saved location!",
+				Image = "rbxassetid://4483345998",
+				Time = 5
+			})
+		else
+			OrionLib:MakeNotification({
+				Name = "Error",
+				Content = "You don't have a saved location!",
+				Image = "rbxassetid://4483345998",
+				Time = 5
+			})
+		end
+	end
+})
+
+
+local Tab = Window:MakeTab({
+	Name = "Base",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "Base"
+})
+
+Tab:AddButton({
+	Name = "Teleport Base",
+	Callback = function()
+
+local player = game.Players.LocalPlayer
+
+local function teleportPlayer()
+    player.Character:SetPrimaryPartCFrame(CFrame.new(-268, 28, 142))
+end
+
+teleportPlayer()
+
+OrionLib:MakeNotification({
+    Name = "Teleport Base",
+    Content = "You have been teleported to the Base location!",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
+
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Back",
+	Callback = function()
+      		
+local player = game.Players.LocalPlayer
+
+local function teleportPlayer()
+    player.Character:SetPrimaryPartCFrame(CFrame.new(-214, -11, 204))
+end
+
+teleportPlayer()
+
+
+OrionLib:MakeNotification({
+    Name = "Back",
+    Content = "You have been teleported back!",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
+  	end    
+})
+
