@@ -222,7 +222,7 @@ Tab:AddButton({
 local player = game.Players.LocalPlayer
 
 local function teleportPlayer()
-    player.Character:SetPrimaryPartCFrame(CFrame.new(-268, 28, 142))
+    player.Character:SetPrimaryPartCFrame(CFrame.new(-236, 176, -301))
 end
 
 teleportPlayer()
