@@ -216,7 +216,7 @@ local Section = Tab:AddSection({
 })
 
 Tab:AddButton({
-	Name = "Teleport Base",
+	Name = "Teleport to outside",
 	Callback = function()
 
 local player = game.Players.LocalPlayer
@@ -238,7 +238,7 @@ OrionLib:MakeNotification({
 })
 
 Tab:AddButton({
-	Name = "Back",
+	Name = "Teleport inside",
 	Callback = function()
       		
 local player = game.Players.LocalPlayer
