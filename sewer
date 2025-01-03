@@ -5,6 +5,68 @@ local Window = OrionLib:MakeWindow({Name = "The Sewer", HidePremium = false, Sav
 
 local savedLocations = {}
 
+-- Create the "Player List" tab
+local TabPlayer = Window:MakeTab({
+    Name = "Player List",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local selectedPlayer = nil
+local playerDropdown
+
+-- Function to update the dropdown menu with current players
+local function updatePlayerDropdown()
+    local playerNames = {}
+    for _, player in pairs(game.Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    playerDropdown:Refresh(playerNames)
+end
+
+-- Add a dropdown to select a player
+playerDropdown = TabPlayer:AddDropdown({
+    Name = "Select Player",
+    Default = "",
+    Options = {},
+    Callback = function(value)
+        selectedPlayer = game.Players:FindFirstChild(value)
+    end
+})
+
+-- Button to teleport to the selected player
+TabPlayer:AddButton({
+    Name = "Teleport to Player",
+    Callback = function()
+        if selectedPlayer and selectedPlayer.Character then
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+            local targetRootPart = selectedPlayer.Character:WaitForChild("HumanoidRootPart")
+            humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, 5, 0)
+
+            OrionLib:MakeNotification({
+                Name = "Teleported",
+                Content = "You have been teleported to " .. selectedPlayer.Name .. "!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        else
+            OrionLib:MakeNotification({
+                Name = "Error",
+                Content = "No player selected or player has no character!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+-- Update the dropdown when players join or leave
+updatePlayerDropdown()
+
+game.Players.PlayerAdded:Connect(updatePlayerDropdown)
+game.Players.PlayerRemoving:Connect(updatePlayerDropdown)
+
 -- Create the "Collect" tab
 local TabCollect = Window:MakeTab({
 	Name = "Collect",
@@ -204,7 +266,7 @@ TabHome:AddButton({
 	end
 })
 
-
+-- Create the "Base" tab
 local Tab = Window:MakeTab({
 	Name = "Base",
 	Icon = "rbxassetid://4483345998",
@@ -218,44 +280,35 @@ local Section = Tab:AddSection({
 Tab:AddButton({
 	Name = "Teleport to outside",
 	Callback = function()
+		local function teleportPlayer()
+			player.Character:SetPrimaryPartCFrame(CFrame.new(-236, 176, -301))
+		end
 
-local player = game.Players.LocalPlayer
+		teleportPlayer()
 
-local function teleportPlayer()
-    player.Character:SetPrimaryPartCFrame(CFrame.new(-236, 176, -301))
-end
-
-teleportPlayer()
-
-OrionLib:MakeNotification({
-    Name = "Teleport Base",
-    Content = "You have been teleported to the Base location!",
-    Image = "rbxassetid://4483345998",
-    Time = 5
-})
-
-  	end    
+		OrionLib:MakeNotification({
+			Name = "Teleport Base",
+			Content = "You have been teleported to the Base location!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end	
 })
 
 Tab:AddButton({
 	Name = "Teleport inside",
 	Callback = function()
-      		
-local player = game.Players.LocalPlayer
+		local function teleportPlayer()
+			player.Character:SetPrimaryPartCFrame(CFrame.new(-214, -11, 204))
+		end
 
-local function teleportPlayer()
-    player.Character:SetPrimaryPartCFrame(CFrame.new(-214, -11, 204))
-end
+		teleportPlayer()
 
-teleportPlayer()
-
-
-OrionLib:MakeNotification({
-    Name = "Back",
-    Content = "You have been teleported back!",
-    Image = "rbxassetid://4483345998",
-    Time = 5
+		OrionLib:MakeNotification({
+			Name = "Back",
+			Content = "You have been teleported back!",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+	end	
 })
-  	end    
-})
-
