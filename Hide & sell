@@ -1,0 +1,166 @@
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+
+local Window = OrionLib:MakeWindow({
+    Name = "Hide & Sell",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "OrionConfig_HideSell",
+    IntroEnabled = false,
+    Drag = true -- Moveable window
+})
+
+local MainTab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local autoCollect = false
+local autoCollectConnection
+local selectedEgg = "Basic"
+local spinCount = 1
+
+-- Auto Collect Toggle
+MainTab:AddToggle({
+    Name = "Auto Collect",
+    Default = false,
+    Callback = function(value)
+        autoCollect = value
+        if autoCollect then
+            autoCollectConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                local args = {
+                    [1] = "OnSellItems"
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvent"):WaitForChild("CommonServerFunction"):InvokeServer(unpack(args))
+            end)
+        elseif autoCollectConnection then
+            autoCollectConnection:Disconnect()
+            autoCollectConnection = nil
+        end
+    end
+})
+
+-- Get All Cards Teleport Button
+MainTab:AddButton({
+    Name = "Get All Cards (Teleport)",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            local originalPosition = hrp.CFrame -- I-save ang original position ng player
+
+            local coordinates = {
+                Vector3.new(80.8864, 146.3718, 188.8534),
+                Vector3.new(-53.1942, 102.8701, -140.3604),
+                Vector3.new(-142.5350, 113.5380, -291.3554),
+                Vector3.new(1.0135, 117.8923, -214.4552),
+                Vector3.new(54.8380, 172.2662, -254.5557),
+                Vector3.new(14.1273, 111.4840, -157.2292),
+                Vector3.new(101.6929, 106.7316, 37.0382),
+                Vector3.new(126.1941, 143.4958, -63.7781),
+                Vector3.new(156.4511, 183.5187, -255.9097),
+                Vector3.new(81.2509, 182.2278, -303.3851),
+                Vector3.new(-210.0215, 163.7063, -265.9256),
+                Vector3.new(-264.3942, 166.9763, -128.9712),
+                Vector3.new(-207.5948, 134.3125, -4.9842),
+                Vector3.new(-36.9028, 105.2487, 127.0330),
+                Vector3.new(-47.5608, 102.9378, 87.8843),
+                Vector3.new(-216.6289, 133.0677, -103.0411),
+                Vector3.new(-109.5847, 105.8832, 103.9172),
+                Vector3.new(-112.6541, 182.9239, -213.0382),
+                Vector3.new(13.6286, 118.0825, 193.0341),
+                Vector3.new(15.5062, 99.3259, -314.0344),
+                Vector3.new(-319.7892, 173.4190, 377.9137),
+                Vector3.new(-314.1569, 199.2102, 590.4705),
+                Vector3.new(-413.7357, 205.1539, 549.7534),
+                Vector3.new(-81.4946, 107.2198, 434.2314),
+                Vector3.new(-530.9366, 232.8746, 594.3111),
+                Vector3.new(-340.0581, 150.3299, 610.0452),
+                Vector3.new(-464.5640, 142.8469, 973.8484),
+                Vector3.new(-198.5172, 158.3013, 1021.1758),
+                Vector3.new(-64.2324, 161.1376, 948.2806),
+                Vector3.new(148.7253, 141.7733, 1015.4020),
+                Vector3.new(236.25657653808594, 394.3619079589844, 667.523193359375), -- Updated coordinate
+                Vector3.new(196.2879, 239.3517, 853.2500),
+                Vector3.new(198.3145, 452.1420, 490.3556),
+                Vector3.new(312.5384, 516.0891, 622.5335),
+                Vector3.new(374.8724, 181.8019, 982.9509),
+                Vector3.new(129.1807, 495.7273, 625.2621),
+                Vector3.new(66.2531, 165.4994, 362.6064),
+                Vector3.new(-348.9055, 202.0858, 815.6346),
+                Vector3.new(-533.0839, 249.4995, 569.4266),
+                Vector3.new(-38.4222, 121.2059, 638.5425),
+                Vector3.new(-38.4741, 70.3051, 576.5128),
+                Vector3.new(-74.6480, 70.8687, 702.5198),
+                Vector3.new(-1.9090, 340.5501, 932.8992)
+            }
+
+            for _, coord in ipairs(coordinates) do
+                hrp.CFrame = CFrame.new(coord)
+                wait(1) -- Delay ng 1 segundo bago mag teleport sa susunod na coordinate
+            end
+
+            -- Pagkatapos ng huling teleport, ibalik sa original position
+            hrp.CFrame = originalPosition
+        else
+            warn("HumanoidRootPart not found!")
+        end
+    end
+})
+
+-- Egg Dropdown
+MainTab:AddDropdown({
+    Name = "Select Egg",
+    Default = "Basic",
+    Options = {"Basic", "Rare"},
+    Callback = function(value)
+        selectedEgg = value
+    end
+})
+
+-- Spin Count Textbox
+MainTab:AddTextbox({
+    Name = "Spin Count",
+    Default = "1",
+    TextDisappear = true,
+    Callback = function(value)
+        local count = tonumber(value)
+        if count and count > 0 then
+            spinCount = count
+        else
+            OrionLib:MakeNotification({
+                Name = "Invalid Input",
+                Content = "Please enter a valid number greater than 0.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+-- Spin Egg Button
+MainTab:AddButton({
+    Name = "Spin Egg",
+    Callback = function()
+        for i = 1, spinCount do
+            local args
+            if selectedEgg == "Basic" then
+                args = {
+                    [1] = "OnPetGachaSingleTrigger",
+                    [2] = "Basic"
+                }
+            elseif selectedEgg == "Rare" then
+                args = {
+                    [1] = "OnPetGachaSingleTrigger",
+                    [2] = "Rare"
+                }
+            end
+            
+            game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvent"):WaitForChild("CommonServerFunction"):InvokeServer(unpack(args))
+            wait(0.5) -- Delay ng 0.5 segundo kada spin
+        end
+    end
+})
+
+OrionLib:Init()
