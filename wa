@@ -11,8 +11,15 @@ local UICorner_2 = Instance.new("UICorner")
 local TextLabel = Instance.new("TextLabel")
 local UICorner_3 = Instance.new("UICorner")
 local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
+local Close = Instance.new("TextButton")
+local UICorner_4 = Instance.new("UICorner")
+local UIAspectRatioConstraint_2 = Instance.new("UIAspectRatioConstraint")
+local open = Instance.new("TextButton")
+local UICorner_5 = Instance.new("UICorner")
+local UIAspectRatioConstraint_3 = Instance.new("UIAspectRatioConstraint")
+local speedButton = Instance.new("TextButton") -- New button to change speed
 
---Properties:
+-- Properties:
 
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -21,10 +28,8 @@ Frame.Parent = ScreenGui
 Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 29)
 Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0.25, 0, 0.183833107, 0)
+Frame.Position = UDim2.new(0.268627465, 0, 0.197522819, 0)
 Frame.Size = UDim2.new(0, 536, 0, 323)
-Frame.Active = true
-Frame.Draggable = true
 
 UICorner.Parent = Frame
 
@@ -52,3 +57,96 @@ UICorner_3.CornerRadius = UDim.new(0, 99999)
 UICorner_3.Parent = TextLabel
 
 UIAspectRatioConstraint.Parent = TextLabel
+
+Close.Name = "Close"
+Close.Parent = Frame
+Close.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+Close.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Close.BorderSizePixel = 0
+Close.Position = UDim2.new(0.946971059, 0, 0.0318416916, 0)
+Close.Size = UDim2.new(0, 32, 0, 20)
+Close.Font = Enum.Font.SourceSans
+Close.Text = ""
+Close.TextColor3 = Color3.fromRGB(0, 0, 0)
+Close.TextSize = 14.000
+
+UICorner_4.CornerRadius = UDim.new(0, 99999)
+UICorner_4.Parent = Close
+
+UIAspectRatioConstraint_2.Parent = Close
+
+open.Name = "open"
+open.Parent = ScreenGui
+open.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+open.BorderColor3 = Color3.fromRGB(0, 0, 0)
+open.BorderSizePixel = 0
+open.Position = UDim2.new(0.132352948, 0, 0.219035193, 0)
+open.Size = UDim2.new(0, 200, 0, 50)
+open.Font = Enum.Font.SourceSans
+open.Text = ""
+open.TextColor3 = Color3.fromRGB(0, 0, 0)
+open.TextSize = 14.000
+
+UICorner_5.CornerRadius = UDim.new(0, 9999)
+UICorner_5.Parent = open
+
+UIAspectRatioConstraint_3.Parent = open
+
+-- New Speed Button
+
+speedButton.Name = "SpeedButton"
+speedButton.Parent = Frame
+speedButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+speedButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+speedButton.BorderSizePixel = 0
+speedButton.Position = UDim2.new(0.4, 0, 0.4, 0)
+speedButton.Size = UDim2.new(0, 150, 0, 50)
+speedButton.Font = Enum.Font.SourceSans
+speedButton.Text = "Increase Speed"
+speedButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+speedButton.TextSize = 14.000
+
+UICorner_6 = Instance.new("UICorner")
+UICorner_6.CornerRadius = UDim.new(0, 9999)
+UICorner_6.Parent = speedButton
+
+-- Script to change player speed when button is pressed
+
+local function changeSpeed()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = 100
+end
+
+speedButton.MouseButton1Click:Connect(changeSpeed)
+
+-- Scripts for other buttons
+
+local function MOIPMMZ_fake_script() -- Close.Script 
+    local script = Instance.new('Script', Close)
+    
+    local textButton = script.Parent -- Ipinapalagay na ang script ay nasa loob ng TextButton
+    local screenGui = textButton.Parent -- Nahanap ang parent (ScreenGui)
+    
+    textButton.MouseButton1Click:Connect(function()
+        -- Hanapin lahat ng ScreenGui sa loob ng game
+        for _, gui in pairs(game:GetDescendants()) do
+            if gui:IsA("ScreenGui") then
+                gui:Destroy() -- I-destroy ang buong ScreenGui
+            end
+        end
+    end)
+end
+coroutine.wrap(MOIPMMZ_fake_script)()
+
+local function EESW_fake_script() -- open.LocalScript 
+    local script = Instance.new('LocalScript', open)
+    
+    local frame = script.Parent.Parent.Frame
+    
+    script.Parent.MouseButton1Click:Connect(function()
+        frame.Visible = not frame.Visible -- Mag-toggle sa pagitan ng true at false
+    end)
+end
+coroutine.wrap(EESW_fake_script)()
