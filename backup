@@ -427,8 +427,25 @@ local beanBagButton = TabBringPlayer:AddButton({
 
             OrionLib:MakeNotification({
                 Name = "Beanbag Teleported",
-                Content = "The Beanbag has been teleported and
+                Content = "The Beanbag has been teleported and stabilized!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
 
+            -- Optional: To unanchor and allow movement later, destroy BodyPosition
+            -- When you want to move the BeanBag, you can remove the BodyPosition like this:
+            -- bodyPosition:Destroy()  -- This allows the BeanBag to move freely again
+
+        else
+            OrionLib:MakeNotification({
+                Name = "Error",
+                Content = "No available unowned BeanBag found with MeshPart to teleport.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
 
 -- Create the "Server" tab
 local TabServer = Window:MakeTab({
