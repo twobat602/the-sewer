@@ -1,504 +1,139 @@
 local player = game.Players.LocalPlayer
-
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
-
-local Window = OrionLib:MakeWindow({Name = "The Sewer", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
-
-local savedLocations = {}
-
--- Create the "Player" tab
-local TabPlayer = Window:MakeTab({
-    Name = "Player",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/Library-ui/refs/heads/main/Redzhubui"))()
+local Window = redzlib:MakeWindow({
+    Title = "redz Hub : The Sewers",
+    SubTitle = "by Twobat",
+    SaveFolder = "testando | redz lib v5.lua"
 })
 
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://119965632862212", BackgroundTransparency = 0 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
+
+-- Player Tab
+local TabPlayer = Window:MakeTab({"Player", "person"})
+Window:SelectTab(TabPlayer)
+
+-- Initial player list
+local playerNames = {}
+for _, plr in ipairs(game.Players:GetPlayers()) do
+    if plr ~= player then -- Hindi isasama ang sarili sa listahan
+        table.insert(playerNames, plr.Name)
+    end
+end
+
+-- Player List Dropdown
 local selectedPlayer = nil
-local playerDropdown
-
--- Function to update the dropdown menu with current players
-local function updatePlayerDropdown()
-    local playerNames = {}
-    for _, player in pairs(game.Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    playerDropdown:Refresh(playerNames)
-end
-
--- Add a dropdown to select a player
-playerDropdown = TabPlayer:AddDropdown({
-    Name = "Select Player",
+local playerDropdown = TabPlayer:AddDropdown({
+    Name = "Players List",
+    Description = "Select a player to teleport to",
+    Options = playerNames, 
     Default = "",
-    Options = {},
-    Callback = function(value)
-        selectedPlayer = game.Players:FindFirstChild(value)
+    Flag = "PlayerDropdown",
+    Callback = function(Value)
+        selectedPlayer = Value
     end
 })
 
--- Button to teleport to the selected player
-TabPlayer:AddButton({
-    Name = "Teleport to Player",
-    Callback = function()
-        if selectedPlayer and selectedPlayer.Character then
-            local character = player.Character or player.CharacterAdded:Wait()
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            local targetRootPart = selectedPlayer.Character:WaitForChild("HumanoidRootPart")
-            humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, 5, 0)
-
-            OrionLib:MakeNotification({
-                Name = "Teleported",
-                Content = "You have been teleported to " .. selectedPlayer.Name .. "!",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        else
-            OrionLib:MakeNotification({
-                Name = "Error",
-                Content = "No player selected or player has no character!",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+-- Function para i-update ang player list
+local function updatePlayerList()
+    local updatedNames = {}
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr ~= player then -- Hindi isasama ang sarili
+            table.insert(updatedNames, plr.Name)
         end
     end
-})
-
--- Update the dropdown when players join or leave
-updatePlayerDropdown()
-
-game.Players.PlayerAdded:Connect(updatePlayerDropdown)
-game.Players.PlayerRemoving:Connect(updatePlayerDropdown)
-
--- Fly Script
-local flying = false
-local speed = 50
-local char = player.Character or player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
-
--- Detect if Mobile Device
-local UIS = game:GetService("UserInputService")
-local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled and not UIS.MouseEnabled
-
--- Fly/Unfly Function
-local function toggleFly()
-    flying = not flying
-    if flying then
-        -- Adjust speed if mobile device
-        local adjustedSpeed = isMobile and (speed / 2) or speed
-        
-        local bv = Instance.new("BodyVelocity", hrp)
-        bv.Velocity = Vector3.new(0, 0, 0)
-        bv.MaxForce = Vector3.new(400000, 400000, 400000)
-        
-        local bg = Instance.new("BodyGyro", hrp)
-        bg.MaxTorque = Vector3.new(400000, 400000, 400000)
-        bg.P = 100000
-        
-        game:GetService("RunService").Stepped:Connect(function()
-            if flying then
-                local moveDir = player.Character:FindFirstChildOfClass("Humanoid").MoveDirection
-                if moveDir.Magnitude > 0 then
-                    bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * adjustedSpeed
-                else
-                    bv.Velocity = Vector3.new(0, 0, 0)
-                end
-                bg.CFrame = workspace.CurrentCamera.CFrame
-            else
-                bv:Destroy()
-                bg:Destroy()
-            end
-        end)
-    end
+    playerDropdown:Refresh(updatedNames, selectedPlayer or "")
 end
 
+-- Auto-refresh kapag may nag-join o nag-leave
+game.Players.PlayerAdded:Connect(updatePlayerList)
+game.Players.PlayerRemoving:Connect(updatePlayerList)
 
-
--- Add Fly Button to the "Player" Tab
-TabPlayer:AddButton({
-    Name = "Toggle Fly",
-    Callback = function()
-        toggleFly()
-    end
-})
-
--- Add Speed Adjustment Textbox
-TabPlayer:AddTextbox({
-    Name = "Set Fly Speed",
-    Default = tostring(speed),
-    TextOnly = true,
-    Callback = function(value)
-        speed = tonumber(value) or 50
-    end
-})
-
--- Fly Keybind (C)
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.C then
-        toggleFly()
-    end
-end)
-
--- Reset Fly Function on Character Respawn
-player.CharacterAdded:Connect(function(character)
-    -- Reinitialize the flying script whenever the character respawns
-    hrp = character:WaitForChild("HumanoidRootPart")
-    flying = false  -- Reset flying status
-end)
-
--- Create the "Collect" tab
-local TabCollect = Window:MakeTab({
-    Name = "Collect",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local SectionCollect = TabCollect:AddSection({
-    Name = "Collect Items"
-})
-
--- Burger teleportation
-TabCollect:AddButton({
-    Name = "Burger",
-    Callback = function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local originalPosition = humanoidRootPart.CFrame
-        
-        local function teleportPlayerToBurger(burger)
-            if burger then
-                local burgerPosition = burger.PrimaryPart and burger.PrimaryPart.CFrame or burger.CFrame
-                character:SetPrimaryPartCFrame(burgerPosition * CFrame.new(0, 5, 0))
-            end
-        end
-
-        local function teleportToDifferentBurgers()
-            local burgers = {}
-            for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
-                if obj.Name == "Burger" then
-                    table.insert(burgers, obj)
-                end
-            end
-            for i = 1, 3 do
-                if burgers[i] then
-                    teleportPlayerToBurger(burgers[i])
-                    wait(4)
-                end
-            end
-            character:SetPrimaryPartCFrame(originalPosition)
-        end
-
-        teleportToDifferentBurgers()
-
-        OrionLib:MakeNotification({
-            Name = "Burger Teleport",
-            Content = "You have been teleported to the Burgers!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- ScrapPile teleportation
-TabCollect:AddButton({
-    Name = "ScrapPile",
-    Callback = function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local originalPosition = humanoidRootPart.CFrame
-        
-        local function teleportPlayerToScrapPile(scrapPile)
-            if scrapPile then
-                local scrapPilePosition = scrapPile.PrimaryPart and scrapPile.PrimaryPart.CFrame or scrapPile.CFrame
-                character:SetPrimaryPartCFrame(scrapPilePosition * CFrame.new(0, 5, 0))
-            end
-        end
-
-        local function teleportToDifferentScrapPiles()
-            local scrapPiles = {}
-            for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
-                if obj.Name == "ScrapPile" then
-                    table.insert(scrapPiles, obj)
-                end
-            end
-            for i = 1, 3 do
-                if scrapPiles[i] then
-                    teleportPlayerToScrapPile(scrapPiles[i])
-                    wait(4)
-                end
-            end
-            character:SetPrimaryPartCFrame(originalPosition)
-        end
-
-        teleportToDifferentScrapPiles()
-
-        OrionLib:MakeNotification({
-            Name = "ScrapPile Teleport",
-            Content = "You have been teleported to the ScrapPiles!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- Cheese teleportation
-TabCollect:AddButton({
-    Name = "Cheese",
-    Callback = function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local originalPosition = humanoidRootPart.CFrame
-        
-        local function teleportPlayerToCheese(cheese)
-            if cheese then
-                local cheesePosition = cheese.PrimaryPart and cheese.PrimaryPart.CFrame or cheese.CFrame
-                character:SetPrimaryPartCFrame(cheesePosition * CFrame.new(0, 5, 0))
-            end
-        end
-
-        local function teleportToDifferentCheese()
-            local cheeses = {}
-            for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
-                if obj.Name == "Cheese" then
-                    table.insert(cheeses, obj)
-                end
-            end
-            for i = 1, 3 do
-                if cheeses[i] then
-                    teleportPlayerToCheese(cheeses[i])
-                    wait(4)
-                end
-            end
-            character:SetPrimaryPartCFrame(originalPosition)
-        end
-
-        teleportToDifferentCheese()
-
-        OrionLib:MakeNotification({
-            Name = "Cheese Teleport",
-            Content = "You have been teleported to the Cheese!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- BottlePack teleportation
-TabCollect:AddButton({
-    Name = "BottlePack",
-    Callback = function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local originalPosition = humanoidRootPart.CFrame
-        
-        local function teleportPlayerToBottlePack(bottlePack)
-            if bottlePack then
-                local bottlePackPosition = bottlePack.PrimaryPart and bottlePack.PrimaryPart.CFrame or bottlePack.CFrame
-                character:SetPrimaryPartCFrame(bottlePackPosition * CFrame.new(0, 5, 0))
-            end
-        end
-
-        local function teleportToDifferentBottlePacks()
-            local bottlePacks = {}
-            for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
-                if obj.Name == "BottlePack" then
-                    table.insert(bottlePacks, obj)
-                end
-            end
-            for i = 1, 3 do
-                if bottlePacks[i] then
-                    teleportPlayerToBottlePack(bottlePacks[i])
-                    wait(4)
-                end
-            end
-            character:SetPrimaryPartCFrame(originalPosition)
-        end
-
-        teleportToDifferentBottlePacks()
-
-        OrionLib:MakeNotification({
-            Name = "BottlePack Teleport",
-            Content = "You have been teleported to the BottlePacks!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- Create the "Set Home" tab
-local TabHome = Window:MakeTab({
-    Name = "Set Home",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local SectionHome = TabHome:AddSection({
-    Name = "Home"
-})
-
--- Button to Save Position
-TabHome:AddButton({
-    Name = "Save Position",
-    Callback = function()
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        savedLocations[player.UserId] = humanoidRootPart.Position
-        
-        OrionLib:MakeNotification({
-            Name = "Position Saved",
-            Content = "Your position has been saved as your home.",
-            Image = "rbxassetid://4483345998",
-            Time = 5
-        })
-    end
-})
-
--- Button to Teleport to Saved Position
-TabHome:AddButton({
-    Name = "Teleport Home",
-    Callback = function()
-        local savedPosition = savedLocations[player.UserId]
-        if savedPosition then
-            local character = player.Character or player.CharacterAdded:Wait()
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            humanoidRootPart.CFrame = CFrame.new(savedPosition)
-
-            OrionLib:MakeNotification({
-                Name = "Teleported",
-                Content = "You have been teleported to your saved home position.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-        else
-            OrionLib:MakeNotification({
-                Name = "Error",
-                Content = "No home position saved.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+-- Teleport Button (Ikaw ang pupunta sa napiling player)
+TabPlayer:AddButton({"Teleport to Player", function()
+    if selectedPlayer then
+        local targetPlayer = game.Players:FindFirstChild(selectedPlayer)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
         end
     end
-})
+end})
 
--- Create the "Bring Player" tab
-local TabBringPlayer = Window:MakeTab({
-    Name = "Bring Player",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+local Paragraph = TabPlayer:AddParagraph({"How to use bring player", "Click the Bring button first and place it in the ground, and select player, create a clan\nask the player to join and ask to sit. Go to loc you want and click bring ang place the beanbag on the ground"})
 
-local savedBeanBag = nil  -- Variable to store the reference of the BeanBag with MeshPart
+-- Get BeanBag Button
+TabPlayer:AddButton({"Bring player", function()
+    local beanBag = game.Workspace.DynamicFurniture:FindFirstChild("BeanBag")
+    if beanBag and beanBag:FindFirstChild("MeshPart") then
+        local meshPart = beanBag.MeshPart
+        local ownerAttribute = beanBag:GetAttribute("Owner")
 
-local beanBagButton = TabBringPlayer:AddButton({
-    Name = "Get Beanbag",
-    Callback = function()
-        -- Find the correct BeanBag model that has a MeshPart inside it and is unowned
-        local beanBag = nil
-        for _, obj in pairs(game.Workspace.DynamicFurniture:GetChildren()) do
-            -- Ensure the object is a BeanBag, it has a MeshPart, and no "Owner"
-            if obj.Name == "BeanBag" and obj:FindFirstChildOfClass("MeshPart") and not obj:FindFirstChild("Owner") then
-                beanBag = obj
-                break
-            end
-        end
-
-        if beanBag then
-            -- If it's the first time, save the reference to the BeanBag
-            if not savedBeanBag then
-                savedBeanBag = beanBag
-            end
-
-            -- Teleport the BeanBag to the player
-            local character = player.Character or player.CharacterAdded:Wait()
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            
-            -- Set the CFrame of the entire model to the player's position
-            beanBag:SetPrimaryPartCFrame(humanoidRootPart.CFrame * CFrame.new(0, 5, 0))
-
-            -- Use BodyPosition to prevent the BeanBag from falling (without anchoring it)
-            local bodyPosition = Instance.new("BodyPosition")
-            bodyPosition.MaxForce = Vector3.new(400000, 400000, 400000)  -- High force to keep it in place
-            bodyPosition.D = 10000  -- Damping to make it stay in place smoothly
-            bodyPosition.P = 100000  -- Power to keep the BeanBag in place
-            bodyPosition.Parent = beanBag.PrimaryPart  -- Attach to the PrimaryPart of the BeanBag
-
-            -- Ensure the BeanBag is movable by removing BodyPosition if needed
-            -- Optional: You can unanchor the BeanBag and allow it to fall
-            -- beanBag.PrimaryPart.Anchored = false
-
-            OrionLib:MakeNotification({
-                Name = "Beanbag Teleported",
-                Content = "The Beanbag has been teleported and stabilized!",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
-
-            -- Optional: To unanchor and allow movement later, destroy BodyPosition
-            -- When you want to move the BeanBag, you can remove the BodyPosition like this:
-            -- bodyPosition:Destroy()  -- This allows the BeanBag to move freely again
-
-        else
-            OrionLib:MakeNotification({
-                Name = "Error",
-                Content = "No available unowned BeanBag found with MeshPart to teleport.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+        if ownerAttribute == nil or ownerAttribute == player.UserId then
+            local frontPosition = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5)
+            meshPart.CFrame = frontPosition
         end
     end
-})
+end})
 
--- Create the "Server" tab
-local TabServer = Window:MakeTab({
-    Name = "Server",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+local TabCollect = Window:MakeTab({"Collect", "cherry"})
 
--- Rejoin Button
-TabServer:AddButton({
-    Name = "Rejoin Server",
-    Callback = function()
-        local placeId = game.PlaceId
-        local jobId = game.JobId
-        game:GetService("TeleportService"):TeleportToPlaceInstance(placeId, jobId, player)
-    end
-})
+local Paragraph = TabCollect:AddParagraph({"Farm gear/bottle", "This is not automatically place, you need a Extractor for farming gear and bottle"})
 
--- ServerHop Button
-TabServer:AddButton({
-    Name = "Server Hop",
-    Callback = function()
-        local placeId = game.PlaceId
-        local httpService = game:GetService("HttpService")
-        local servers = {}
-        local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+TabCollect:AddButton({"Collect All Scrap2", function()
+    for _, scrap in ipairs(game.Workspace.DynamicFurniture:GetChildren()) do
+        if scrap:IsA("Model") and scrap.Name == "Scrap2" then
+            local ownerAttribute = scrap:GetAttribute("Owner")
 
-        local success, response = pcall(function()
-            return httpService:JSONDecode(game:HttpGet(url))
-        end)
-
-        if success and response and response.data then
-            for _, server in pairs(response.data) do
-                if server.id ~= game.JobId and server.playing < server.maxPlayers then
-                    table.insert(servers, server.id)
+            -- Iteteleport lang ang Scrap2 kung wala itong may-ari
+            if ownerAttribute == nil then
+                local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                local smoothPart = scrap:FindFirstChildWhichIsA("MeshPart") -- Hahanapin ang MeshPart
+                
+                if playerRoot and smoothPart then
+                    smoothPart.CFrame = playerRoot.CFrame * CFrame.new(0, 0, -2)
                 end
             end
         end
+    end
+end})
 
-        if #servers > 0 then
-            local randomServer = servers[math.random(1, #servers)]
-            game:GetService("TeleportService"):TeleportToPlaceInstance(placeId, randomServer, player)
-        else
-            OrionLib:MakeNotification({
-                Name = "Server Hop Failed",
-                Content = "No other servers found!",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+TabCollect:AddButton({"Collect All Pallet2", function()
+    for _, pallet in ipairs(game.Workspace.DynamicFurniture:GetChildren()) do
+        if pallet:IsA("Model") and pallet.Name == "Pallet2" then
+            local ownerAttribute = pallet:GetAttribute("Owner")
+
+            -- Iteteleport lang ang Pallet2 kung wala itong may-ari
+            if ownerAttribute == nil then
+                local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                if playerRoot then
+                    pallet:SetPrimaryPartCFrame(playerRoot.CFrame * CFrame.new(0, 0, -2))
+                end
+            end
         end
     end
-})
+end})
 
+local TabSetting = Window:MakeTab({"Setting", "apple"})
 
--- Initialize GUI
-OrionLib:Init()
+local savedPosition = nil -- Variable para sa saved position
+
+-- Save Position Button
+TabSetting:AddButton({"Save Position", function()
+    local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if playerRoot then
+        savedPosition = playerRoot.CFrame
+        print("Position Saved:", savedPosition)
+    end
+end})
+
+-- Teleport to Saved Position Button
+TabSetting:AddButton({"Teleport to Saved Position", function()
+    local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if playerRoot and savedPosition then
+        playerRoot.CFrame = savedPosition
+        print("Teleported to Saved Position")
+    end
+end})
+
