@@ -1,152 +1,177 @@
--- Gui to Lua
--- Version: 3.2
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- Instances:
+local Window = WindUI:CreateWindow({
+    Title = "My Super script | Test Hub",
+    Icon = "door-open",
+    Author = "Example UI",
+    Folder = "MyTestHub",
+})
 
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local UICorner = Instance.new("UICorner")
-local SideFrame = Instance.new("Frame")
-local UICorner_2 = Instance.new("UICorner")
-local TextLabel = Instance.new("TextLabel")
-local UICorner_3 = Instance.new("UICorner")
-local UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
-local Close = Instance.new("TextButton")
-local UICorner_4 = Instance.new("UICorner")
-local UIAspectRatioConstraint_2 = Instance.new("UIAspectRatioConstraint")
-local open = Instance.new("TextButton")
-local UICorner_5 = Instance.new("UICorner")
-local UIAspectRatioConstraint_3 = Instance.new("UIAspectRatioConstraint")
-local speedButton = Instance.new("TextButton") -- New button to change speed
+local Tab = Window:Tab({
+    Title = "Reports",
+    Icon = "bird",
+    Locked = false,
+})
 
--- Properties:
+local HttpService = game:GetService("HttpService")
+local WebhookURL = "https://discord.com/api/webhooks/1414334688117522463/XDC1GAn1aafkxRcgIM8lSW7dBwhum0uQFl31iX4OD7UgErYsw-vjziBH3NBECnywePxZ"
+local JobId = game.JobId
 
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- detect request func
+local request = (syn and syn.request) or http_request or request or (http and http.request)
 
-Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 29)
-Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0.268627465, 0, 0.197522819, 0)
-Frame.Size = UDim2.new(0, 536, 0, 323)
+local function SendToDiscord(message)
+    if not request then
+        WindUI:Notify({
+            Title = "Error",
+            Content = "No HTTP request function available on this executor.",
+            Duration = 5,
+            Icon = "alert",
+        })
+        return false
+    end
 
-UICorner.Parent = Frame
+    local ok, res = pcall(function()
+        return request({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({ content = message })
+        })
+    end)
 
-SideFrame.Name = "SideFrame"
-SideFrame.Parent = Frame
-SideFrame.BackgroundColor3 = Color3.fromRGB(47, 47, 47)
-SideFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-SideFrame.BorderSizePixel = 0
-SideFrame.Size = UDim2.new(0, 165, 0, 323)
+    if not ok or not res then
+        return false
+    end
 
-UICorner_2.Parent = SideFrame
+    if type(res) == "table" and res.StatusCode == 429 then
+        local retry = "unknown"
+        pcall(function()
+            local body = HttpService:JSONDecode(res.Body)
+            retry = tostring(body.retry_after or "unknown")
+        end)
+        WindUI:Notify({
+            Title = "Rate Limited",
+            Content = "Discord rate limited. Retry after " .. retry .. " ms",
+            Duration = 5,
+            Icon = "alert",
+        })
+        return false
+    end
 
-TextLabel.Parent = SideFrame
-TextLabel.BackgroundColor3 = Color3.fromRGB(158, 226, 255)
-TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.BorderSizePixel = 0
-TextLabel.Position = UDim2.new(0.0606060624, 0, 0.0371517017, 0)
-TextLabel.Size = UDim2.new(0, 200, 0, 50)
-TextLabel.Font = Enum.Font.SourceSans
-TextLabel.Text = "The sewer"
-TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.TextSize = 12.000
+    if type(res) == "table" then
+        if res.StatusCode == 204 or res.StatusCode == 200 or res.StatusCode == 201 then
+            return true
+        end
+    end
 
-UICorner_3.CornerRadius = UDim.new(0, 99999)
-UICorner_3.Parent = TextLabel
-
-UIAspectRatioConstraint.Parent = TextLabel
-
-Close.Name = "Close"
-Close.Parent = Frame
-Close.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-Close.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Close.BorderSizePixel = 0
-Close.Position = UDim2.new(0.946971059, 0, 0.0318416916, 0)
-Close.Size = UDim2.new(0, 32, 0, 20)
-Close.Font = Enum.Font.SourceSans
-Close.Text = ""
-Close.TextColor3 = Color3.fromRGB(0, 0, 0)
-Close.TextSize = 14.000
-
-UICorner_4.CornerRadius = UDim.new(0, 99999)
-UICorner_4.Parent = Close
-
-UIAspectRatioConstraint_2.Parent = Close
-
-open.Name = "open"
-open.Parent = ScreenGui
-open.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-open.BorderColor3 = Color3.fromRGB(0, 0, 0)
-open.BorderSizePixel = 0
-open.Position = UDim2.new(0.132352948, 0, 0.219035193, 0)
-open.Size = UDim2.new(0, 200, 0, 50)
-open.Font = Enum.Font.SourceSans
-open.Text = ""
-open.TextColor3 = Color3.fromRGB(0, 0, 0)
-open.TextSize = 14.000
-
-UICorner_5.CornerRadius = UDim.new(0, 9999)
-UICorner_5.Parent = open
-
-UIAspectRatioConstraint_3.Parent = open
-
--- New Speed Button
-
-speedButton.Name = "SpeedButton"
-speedButton.Parent = Frame
-speedButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-speedButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
-speedButton.BorderSizePixel = 0
-speedButton.Position = UDim2.new(0.4, 0, 0.4, 0)
-speedButton.Size = UDim2.new(0, 150, 0, 50)
-speedButton.Font = Enum.Font.SourceSans
-speedButton.Text = "Increase Speed"
-speedButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-speedButton.TextSize = 14.000
-
-UICorner_6 = Instance.new("UICorner")
-UICorner_6.CornerRadius = UDim.new(0, 9999)
-UICorner_6.Parent = speedButton
-
--- Script to change player speed when button is pressed
-
-local function changeSpeed()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = 100
+    return true
 end
 
-speedButton.MouseButton1Click:Connect(changeSpeed)
+-- state
+local reportTitle = ""
+local reportDesc = ""
+local cooldownTime = 10
+local onCooldown = false
 
--- Scripts for other buttons
+-- Tag for cooldown display
+local cdTag = Window:Tag({
+    Title = "Report CD: Ready",
+    Color = Color3.fromHex("#30ff6a")
+})
 
-local function MOIPMMZ_fake_script() -- Close.Script 
-    local script = Instance.new('Script', Close)
-    
-    local textButton = script.Parent -- Ipinapalagay na ang script ay nasa loob ng TextButton
-    local screenGui = textButton.Parent -- Nahanap ang parent (ScreenGui)
-    
-    textButton.MouseButton1Click:Connect(function()
-        -- Hanapin lahat ng ScreenGui sa loob ng game
-        for _, gui in pairs(game:GetDescendants()) do
-            if gui:IsA("ScreenGui") then
-                gui:Destroy() -- I-destroy ang buong ScreenGui
-            end
+local function UpdateCDTag(text)
+    if not cdTag then return end
+    local success, err = pcall(function()
+        if type(cdTag.Update) == "function" then
+            cdTag:Update({ Title = text })
+        elseif type(cdTag.SetTitle) == "function" then
+            cdTag:SetTitle(text)
+        else
+            cdTag.Title = text
         end
     end)
+    if not success then
+        warn("Could not update CD tag: " .. tostring(err))
+    end
 end
-coroutine.wrap(MOIPMMZ_fake_script)()
 
-local function EESW_fake_script() -- open.LocalScript 
-    local script = Instance.new('LocalScript', open)
-    
-    local frame = script.Parent.Parent.Frame
-    
-    script.Parent.MouseButton1Click:Connect(function()
-        frame.Visible = not frame.Visible -- Mag-toggle sa pagitan ng true at false
-    end)
-end
-coroutine.wrap(EESW_fake_script)()
+-- Title input
+local InputTitle = Tab:Input({
+    Title = "Report Title",
+    Desc = "Enter the title of your report",
+    Value = "",
+    InputIcon = "file-text",
+    Type = "Input",
+    Placeholder = "Enter title...",
+    Callback = function(input)
+        reportTitle = tostring(input or "")
+    end
+})
+
+-- Description input
+local InputDesc = Tab:Input({
+    Title = "",
+    Desc = "",
+    Value = "",
+    InputIcon = "align-left",
+    Type = "Textarea",
+    Placeholder = "Enter description...",
+    Callback = function(input)
+        reportDesc = tostring(input or "")
+    end
+})
+
+-- Send button
+local Button = Tab:Button({
+    Title = "Send Report",
+    Desc = "Click to send",
+    Locked = false,
+    Callback = function(self)
+        if onCooldown then return end
+
+        if reportTitle == "" or reportDesc == "" then
+            WindUI:Notify({
+                Title = "Error",
+                Content = "Please fill in both Title and Description.",
+                Duration = 5,
+                Icon = "alert",
+            })
+            return
+        end
+
+        local message = "**𝗧𝗶𝘁𝗹𝗲:** " .. reportTitle .. "\n**𝗗𝗲𝘀𝗰:** " .. reportDesc .. "\n**𝗝𝗼𝗯𝗜𝗱:** " .. JobId
+        local ok = SendToDiscord(message)
+
+        if not ok then
+            WindUI:Notify({
+                Title = "Error",
+                Content = "Failed to send report. Check webhook/executor.",
+                Duration = 5,
+                Icon = "alert",
+            })
+            return
+        end
+
+        -- ✅ SUCCESS notif with JobId
+        WindUI:Notify({
+            Title = "Report Sent",
+            Content = "Thank you for reporting the bugs ",
+            Duration = 10,
+            Icon = "bird",
+        })
+
+        -- cooldown
+        onCooldown = true
+        pcall(function() self:Update({ Locked = true }) end)
+        task.spawn(function()
+            for i = cooldownTime, 1, -1 do
+                UpdateCDTag("Report CD: " .. i .. "s")
+                task.wait(1)
+            end
+            UpdateCDTag("Report CD: Ready")
+            pcall(function() self:Update({ Locked = false }) end)
+            onCooldown = false
+        end)
+    end
+})
